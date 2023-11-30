@@ -1,9 +1,10 @@
-from backend import app
+from Osushi import app
 from flask import render_template
 #import pandas as pd
 
 @app.route('/')
 def index():
+    print("render index.html")
     return render_template(
         'index.html'
     )
