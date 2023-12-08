@@ -2,19 +2,94 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>東山動物園の地図</title>
+    <title>マップ</title>
+    
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <style>
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            color: #9acd32;
+            text-align: left;
+            padding: 10px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-family: 'ヒラギノ丸ゴ ProN', 'Hiragino Maru Gothic Pro', 'メイリオ', Meiryo, sans-serif;
+            font-size: 2em;
+            font-weight: bold;
+        }
+        body {
+            padding-top: 50px;
+        }
+    </style>
 </head>
 <body>
-    <h1>東山動物園の地図</h1>
-    <!-- 以下の埋め込みコードは例です。Google Mapsで生成された実際のコードに置き換えてください。 -->
-    <iframe
-      width="600"
-      height="450"
-      style="border:0"
-      loading="lazy"
-      allowfullscreen
-      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3261.123456789012!2d136.12345678901234!3d35.12345678901234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6003769c3bcccccc%3A0xaaaaaaaaaaaaaa!2z5p2x5Lqs55yM5Z-O6ZaA5a6u5a-6IOODleODvOODq-ODvOOCouODs-OCv-ODiOODqeOCueODvOODqw!5e0!3m2!1sja!2sjp!4v1234567890123456">
-    </iframe>
+    <div class="fixed-header">東山動植物園Navi🦊🐯🐼🐹🦁🐰🐶</div>
+    
+    <p id="current-location">現在地: 未取得</p>
+
+    <div id="map" style="width: 600px; height: 400px; margin-top: 30px;"></div>
+    <button onclick="requestLocationPermission()">位置情報の許可を求める</button>
+
+    <script>
+        function initMap() {
+            var map = L.map('map').setView([35.1575, 136.9738], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+                maxZoom: 18,
+            }).addTo(map);
+            return map;
+        }
+
+        function requestLocationPermission() {
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            // 緯度と経度を取得
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            // 緯度経度を表示
+            document.getElementById('current-location').textContent = '現在地: 緯度 ' + latitude + ', 経度 ' + longitude;
+
+            // サーバーに位置情報を送信
+            fetch("/update_location", {
+                method: "POST",
+                body: JSON.stringify({ latitude, longitude }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => response.json())
+            .then(route => {
+                console.log("Received route:", route);  // デバッグのためのログ
+                displayRoute(route);
+            });
+        }, function(error) {
+            alert("位置情報の取得に失敗しました: " + error.message);
+        });
+    } else {
+        alert("Geolocation is not supported by your browser.");
+    }
+}
+
+
+    
+
+    var map = initMap();
+
+        function displayRoute(route) {console.log(route);  // デバッグのためのログ出力
+    var routeLine = L.polyline(route, {color: 'blue'}).addTo(map);
+    map.fitBounds(routeLine.getBounds());
+          
+        }
+    </script>
+
     <p>詳細情報は<a href="https://www.higashiyama.city.nagoya.jp/">東山動物園の公式ウェブサイト</a>をご覧ください。</p>
 </body>
 </html>
